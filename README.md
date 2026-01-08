@@ -40,12 +40,11 @@ This project was built as part of a student task to understand basic JavaScript 
 
 ---
 
-## QR Code Format
 
-The QR code can contain JSON data like:
+##preview
+<img width="1873" height="528" alt="image" src="https://github.com/user-attachments/assets/f87178fb-7521-4822-bfd6-cd50f9f412f5" />
 
-```json
-{
-  "id": "101",
-  "name": "Student Name"
-}
+
+
+
+
