@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Attendance Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.svg">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    
+    
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>QR Attendance Tracker</h1>
+    </header>
+
+    <div class="main-content">
+
+
+        <div class="card scanner-section">
+            <h2>QR Code Scanner</h2>
+            <div id="reader"></div>
+            <button id="startBtn">Scan Now</button>
+            <button id="stopBtn" style="display:none;">Stop Scanner</button>
+        </div>
+
+        <div class="card status-section">
+            <h2>Scan Status</h2>
+            <div id="statusMessage" class="status-message"></div>
+
+            <div id="participantInfo" class="participant-info" style="display:none;">
+                <h3>Participant Details</h3>
+                <div id="participantDetails"></div>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <div class="attendance-list">
+        <h3>Attendance List</h3>
+        <div id="attendeeList">
+            <div style="text-align:center;color:#666;">
+                No attendees yet.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+let qrScanner;
+let attendance = {};
+
+function startScanning() {
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    startBtn.disabled = true;
+
+    qrScanner = new Html5Qrcode("reader");
+
+    qrScanner.start(
+        { facingMode: "environment" },
+        {},
+        onScanSuccess
+    );
+
+    startBtn.style.display = "none";
+    stopBtn.style.display = "block";
+    showStatus("Camera started. Scan QR code.", "info");
+}
+
+function stopScanning() {
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    if (qrScanner) {
+        qrScanner.stop();
+    }
+
+    startBtn.style.display = "block";
+    stopBtn.style.display = "none";
+    startBtn.disabled = false;
+    showStatus("Scanner stopped.", "info");
+}
+
+function onScanSuccess(text) {
+    let participant;
+
+    try {
+        participant = JSON.parse(text);
+    } catch {
+        participant = {
+            id: text,
+            name: text
+        };
+    }
+
+    markAttendance(participant);
+}
+
+function markAttendance(participant) {
+    const id = participant.id || participant.name;
+
+    if (attendance[id]) {
+        showStatus("Already marked present.", "duplicate");
+        showParticipant(participant, "Already Present");
+        return;
+    }
+
+    attendance[id] = participant;
+
+    showStatus("Marked as present.", "success");
+    showParticipant(participant, "Present");
+    addToList(participant);
+}
+
+function showStatus(message, type) {
+    const status = document.getElementById("statusMessage");
+    status.textContent = message;
+    status.className = "status-message " + type;
+}
+
+function showParticipant(participant, status) {
+    const box = document.getElementById("participantInfo");
+
+    box.innerHTML = `
+        <p>Name: ${participant.name || "N/A"}</p>
+        <p>ID: ${participant.id || "N/A"}</p>
+        <p>Status: ${status}</p>
+    `;
+
+    box.style.display = "block";
+}
+
+function addToList(participant) {
+    const list = document.getElementById("attendeeList");
+
+    if (list.children.length === 1) {
+        list.innerHTML = "";
+    }
+
+    const item = document.createElement("div");
+    item.className = "attendee-item";
+    item.textContent = participant.name || participant.id;
+
+    list.appendChild(item);
+}
+
+document.getElementById("startBtn").addEventListener("click", startScanning);
+document.getElementById("stopBtn").addEventListener("click", stopScanning);
+</script>
+
+
+
+
+</body>
+</html>
